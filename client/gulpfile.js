@@ -2,7 +2,7 @@
 var gulp = require('gulp');
 
 // include plug-ins
-var concat = require('gulp-concat');
+var browserify = require('gulp-browserify');
 var stripDebug = require('gulp-strip-debug');
 var uglify = require('gulp-uglify');
 var sass = require('gulp-sass');
@@ -13,14 +13,13 @@ var jasmine = require('gulp-jasmine');
 ///////////////////////////////////////
 
 gulp.task('scripts', function() {
-            //can specify order for deps
-  var stream = gulp.src([/*'./src/scripts/lib.js',*/'./dev/scripts/*.js'])
-    .pipe(concat('script.js'))
+
+  gulp.src('./dev/scripts/app.js')
+    .pipe(browserify())
     .pipe(stripDebug())
     .pipe(uglify())
-    .pipe(gulp.dest('./prod/scripts/'));
+    .pipe(gulp.dest('./prod/'));
 
-  console.log(stream);
 });
 
 gulp.task('styles', function() {
@@ -33,7 +32,7 @@ gulp.task('styles', function() {
 
 gulp.task('tests', function() {
 
-  gulp.src('./dev/spec/*.js')
+  gulp.src('./dev/scripts/spec/*.js')
     .pipe(jasmine());
 
 });
