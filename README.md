@@ -6,4 +6,4 @@ Random-Rule-Game
 
 2.Go build is only for mac at the moment...easy fix though
 
-3.Node.js is needed for gulp client side builds
+3.[Node.js](http://nodejs.org/) is needed for gulp client side builds
