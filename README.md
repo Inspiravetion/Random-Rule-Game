@@ -25,3 +25,9 @@ $ nvm install 0.10.26
 $ git clone git://github.com/kennethreitz/autoenv.git ~/.autoenv
 $ echo 'source ~/.autoenv/activate.sh' >> ~/.profile
 ```
+
+5.Clone this repo to your project directory.
+```
+$ cd path/to/your/project
+$ git clone https://github.com/Inspiravetion/Random-Rule-Game.git
+```
