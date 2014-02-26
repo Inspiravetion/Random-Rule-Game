@@ -1,11 +1,11 @@
 Random-Rule-Game
 ================
 
-###Gotchas:
+###Environment Setup Steps:
 
-1.Need to install [Go](http://golang.org/) for server dev.
+1.Install [Go](http://golang.org/) for server dev.
 
-2.Go cross compilation used to create linux executables on a mac.
+2.Run the following to setup Go cross compilation (used to create linux executables on a mac).
 ```
 $ cd $(go env GOROOT)/src
 $ git clone git://github.com/davecheney/golang-crosscompile.git
@@ -13,14 +13,14 @@ $ source golang-crosscompile/crosscompile.bash
 $ go-crosscompile-build-all
 ```
 
-3.[Node.js](http://nodejs.org/)  and [nvm](https://github.com/creationix/nvm) are used for client side builds
+3.Run the following to install [nvm](https://github.com/creationix/nvm) and [Node.js](http://nodejs.org/).
 ```
 $ git clone https://github.com/creationix/nvm.git ~/.nvm
 $ source ~/.nvm/nvm.sh
 $ nvm install 0.10.26
 ```
 
-4.The automated dev enviroment uses [autoenv](https://github.com/kennethreitz/autoenv) so installing that is a must. 
+4.The automated dev enviroment uses [autoenv](https://github.com/kennethreitz/autoenv) so install it with the following commands. 
 ```
 $ git clone git://github.com/kennethreitz/autoenv.git ~/.autoenv
 $ echo 'source ~/.autoenv/activate.sh' >> ~/.profile
