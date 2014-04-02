@@ -26,7 +26,7 @@ gulp.task('styles', function() {
 
   gulp.src(['./dev/styles/*.scss'])
     .pipe(sass())
-    .pipe(gulp.dest('./prod/styles/*.scss'));
+    .pipe(gulp.dest('./prod/styles/'));
 
 });
 

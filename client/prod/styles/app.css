@@ -1,0 +1,17 @@
+
+#title-container {
+  width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 15%;
+  text-align: center; }
+
+#btn-container {
+  width: 200px;
+  margin: 5% auto; }
+
+#tutorial-btn {
+  float: left; }
+
+#new-game-btn {
+  float: right; }

@@ -11,3 +11,7 @@ linux:
 
 test:
 	go test -v $(TEST_DIRS)
+
+run:
+	go run ./Server.go
+
