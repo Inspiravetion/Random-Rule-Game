@@ -7,7 +7,7 @@ var stripDebug = require('gulp-strip-debug');
 var uglify = require('gulp-uglify');
 var sass = require('gulp-sass');
 var jasmine = require('gulp-jasmine');
- 
+
 ///////////////////////////////////////
 //               Tasks               //
 ///////////////////////////////////////
