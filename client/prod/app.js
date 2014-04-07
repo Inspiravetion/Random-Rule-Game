@@ -2,26 +2,31 @@
 //=============================================================================
 //APP LOGIC
 
-//App entry point
-window.onload = function(){
-  setupConstants();
-  setupGUI();
+var gui = {
+  buttons: {
+    tutorial: '#tutorial',
+    newgame: '#newgame'
+  },
+  modals: {
+    tutorial: {
+      id: '#tutorial-modal'
+    },
+    newgame: {
+      id: '#newgame-modal',
+      controls: {
+        toggle_notes: '#toggle-notes-btn'
+      },
+      notes: '#notes-container'
+    },
+    events: {
+      shown: 'shown.bs.modal'
+    }
+  }
 }
 
-function setupConstants(){
-  //button id's
-  gurantee_namespace('gui.buttons');
-  gui.buttons.tutorial = '#tutorial';
-  gui.buttons.newgame = '#newgame';
-
-  //modal id's
-  gurantee_namespace('gui.modals');
-  gui.modals.tutorial = '#tutorial-modal';
-  gui.modals.newgame = '#newgame-modal';
-
-  //event id's
-  gurantee_namespace('gui.modals.events');
-  gui.modals.events.shown = 'shown.bs.modal';
+//App entry point
+window.onload = function(){
+  setupGUI();
 }
 
 function setupGUI(){
@@ -32,7 +37,7 @@ function setupGUI(){
 function setupButtons(){
   //show tutorial modal when tutorial button is clicked
   $(gui.buttons.tutorial)[0].onclick = function(){
-    $(gui.modals.tutorial).modal({
+    $(gui.modals.tutorial.id).modal({
       backdrop: 'static',
       keyboard: false
     });
@@ -40,7 +45,7 @@ function setupButtons(){
 
   //show newgame modal when new modal is clicked
   $(gui.buttons.newgame)[0].onclick = function(){
-    $(gui.modals.newgame).modal({
+    $(gui.modals.newgame.id).modal({
       backdrop: 'static',
       keyboard: false
     });
@@ -48,28 +53,32 @@ function setupButtons(){
 }
 
 function setupModals() {
-  $(gui.modals.tutorial).on(gui.modals.events.shown, function(e){
+  setupTutorialModal();
+  setupGameModal();
+}
+
+function setupTutorialModal(){
+  $(gui.modals.tutorial.id).on(gui.modals.events.shown, function(e){
     //run this function when the tutorial modal becomes visible
   });
+}
 
-  $(gui.modals.newgame).on(gui.modals.events.shown, function(e){
+function setupGameModal(){
+  $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
     //run this function when the newgame modal becomes visible
   });
+
+  $(gui.modals.newgame.controls.toggle_notes)[0].onclick = function(){
+    var flex = $(gui.modals.newgame.notes).css('flex-grow');
+    if (flex == 0) {
+      $(gui.modals.newgame.notes).css({'flex-grow': '1'});
+    } else {
+      $(gui.modals.newgame.notes).css({'flex-grow': '0'});
+    }
+  }
 }
 
 //=============================================================================
 //HELPERS
-
-//guarantee the namespace delimited by '.' exists
-function gurantee_namespace(packageStr){
-  var packages, scope, packge;
-  packages = packageStr.split('.');
-  scope = this;
-  for(var i = 0; i < packages.length; i++){
-    packge = packages[i];
-    scope[packge] = scope[packge] || {};
-    scope = scope[packge];
-  }
-}
 
 },{}]},{},[1])

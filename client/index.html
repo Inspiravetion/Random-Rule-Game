@@ -5,12 +5,13 @@
   <script type="text/javascript" src="prod/app.js"></script>
   <link rel="stylesheet" href="prod/vendor/bootstrap/css/bootstrap.css" type="text/css" charset="utf-8">
   <link rel="stylesheet" href="prod/vendor/cover.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="prod/styles/app.css" type="text/css" media="screen" title="no title" charset="utf-8">
 </head>
 <body>
 
 <!-- TUTORIAL MODAL -->
 <div class="modal fade" id="tutorial-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog wide">
     <div class="modal-content">
 
       Put tutorial animation here.
@@ -24,14 +25,29 @@
 
 <!-- GAME MODAL -->
 <div class="modal fade" id="newgame-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog wide">
     <div class="modal-content">
 
-      Put game animation here.
+      <div id="game-modal-content">
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Home</button>
+        <div id="game-container">
+          <div id="game-screen"></div>
+          <div id="game-controls">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div id="toggle-notes-btn">toggle notes</div>
+          </div>
+        </div>
+
+        <div id="notes-container"></div>
+
       </div>
+
+      <button type="button" class="btn btn-primary" data-dismiss="modal">Home</button>
+
     </div>
   </div>
 </div>

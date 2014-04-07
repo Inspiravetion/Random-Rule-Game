@@ -1,17 +1,33 @@
+.modal-dialog.wide {
+  width: 80%; }
 
-#title-container {
-  width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 15%;
-  text-align: center; }
+#game-modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 700px; }
 
-#btn-container {
-  width: 200px;
-  margin: 5% auto; }
+#game-modal-content > #game-container {
+  flex-grow: 3;
+  display: flex;
+  background-color: #f00; }
 
-#tutorial-btn {
-  float: left; }
+#game-modal-content > #game-container > #game-screen {
+  flex-grow: 8;
+  background-color: #ff0; }
 
-#new-game-btn {
-  float: right; }
+#game-modal-content > #game-container > #game-controls {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: #f0f; }
+
+#game-controls > div {
+  background-color: #000;
+  flex-grow: 1;
+  border-width: 1px;
+  border-color: white;
+  margin-bottom: 1px; }
+
+#game-modal-content > #notes-container {
+  flex-grow: 1;
+  background-color: #0ff; }

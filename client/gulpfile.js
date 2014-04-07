@@ -16,8 +16,8 @@ gulp.task('scripts', function() {
 
   gulp.src('./dev/scripts/app.js')
     .pipe(browserify())
-    .pipe(stripDebug())
-    .pipe(uglify())
+    // .pipe(stripDebug())
+    // .pipe(uglify())
     .pipe(gulp.dest('./prod/'));
 
 });
