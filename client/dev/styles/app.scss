@@ -15,7 +15,7 @@
 }
 
 #game-modal-content > #game-container > #game-screen {
-  flex-grow: 8;
+  flex-grow: 9;
   background-color: #ff0;
 }
 
@@ -37,4 +37,69 @@
 #game-modal-content > #notes-container {
   flex-grow: 1;
   background-color: #0ff;
+}
+
+#game-modal-content > #notes-container.closed {
+  flex-grow: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 250px;
+  width: 150px;
+  box-shadow: black 0px 0px 5px 0px;
+  border-radius: 5px;
+  transition: top .3s ease;
+}
+
+.card-top-container {
+  flex-grow: 1;
+  background-color: #fff;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-mid-container {
+  flex-grow: 5;
+  background-color: #fff;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-btm-container {
+  flex-grow: 1;
+  background-color: #fff;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.small-card-type {
+  height: 90%;
+  position: absolute;
+  display: block;
+  margin: 1%;
+}
+
+.large-card-type {
+  height: 70%;
+  position: absolute;
+  display: block;
+  top: 15%;
+  left: 8%;
+}
+
+.abs-left{
+  left: 0;
+}
+
+.abs-right{
+  right: 0;
 }

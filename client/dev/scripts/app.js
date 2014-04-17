@@ -1,3 +1,6 @@
+var Game = require('game'),
+    Hand = require('hand'); 
+
 //=============================================================================
 //APP LOGIC
 
@@ -26,6 +29,7 @@ var gui = {
 //App entry point
 window.onload = function(){
   setupGUI();
+  new Hand().show(50, 50, 50);
 }
 
 function setupGUI(){
@@ -68,12 +72,7 @@ function setupGameModal(){
   });
 
   $(gui.modals.newgame.controls.toggle_notes)[0].onclick = function(){
-    var flex = $(gui.modals.newgame.notes).css('flex-grow');
-    if (flex == 0) {
-      $(gui.modals.newgame.notes).css({'flex-grow': '1'});
-    } else {
-      $(gui.modals.newgame.notes).css({'flex-grow': '0'});
-    }
+    $(gui.modals.newgame.notes).toggleClass('closed');
   }
 }
 
