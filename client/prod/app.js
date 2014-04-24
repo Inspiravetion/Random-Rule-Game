@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var Game = require('game'),
-    Hand = require('hand'); 
+    Hand = require('hand');
 
 //=============================================================================
 //APP LOGIC
@@ -30,7 +30,9 @@ var gui = {
 //App entry point
 window.onload = function(){
   setupGUI();
-  new Hand().show(50, 50, 50);
+  var h = new Hand();
+  h.show(50, 50, 50);
+  console.log(h);
 }
 
 function setupGUI(){
@@ -81,8 +83,13 @@ function setupGameModal(){
 //HELPERS
 
 },{"game":3,"hand":4}],2:[function(require,module,exports){
+//Cards are responsive as long as their height:width ratio stays 10:6
+//Card type pictures need to be squares but can be swapped out
+
 function Card(id){
-  return buildCard(id);
+  this.elem = buildCard(id);
+  this.suit = null;
+  this.val  = null;
 }
 
 function buildCard(id){
@@ -189,13 +196,15 @@ function Hand(){
 
 Hand.prototype.show = function(startx, starty, shiftx){
   this.cards.forEach(function(card, i){
-    card.style.position = 'absolute';
-    card.style.top      = starty + 'px';
-    card.style.left     = startx + 'px';
+    var e = card.elem;
+
+    e.style.position = 'absolute';
+    e.style.top      = starty + 'px';
+    e.style.left     = startx + 'px';
 
     startx += shiftx;
-    document.body.appendChild(card);
-  }); 
+    document.body.appendChild(e);
+  });
 }
 
 module.exports = Hand;

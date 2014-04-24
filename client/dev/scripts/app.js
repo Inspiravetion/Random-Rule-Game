@@ -1,5 +1,5 @@
 var Game = require('game'),
-    Hand = require('hand'); 
+    Hand = require('hand');
 
 //=============================================================================
 //APP LOGIC
@@ -29,7 +29,9 @@ var gui = {
 //App entry point
 window.onload = function(){
   setupGUI();
-  new Hand().show(50, 50, 50);
+  var h = new Hand();
+  h.show(50, 50, 50);
+  console.log(h);
 }
 
 function setupGUI(){
