@@ -1,3 +1,15 @@
+window.Object.defineProperty( Element.prototype, 'documentOffsetTop', {
+    get: function () { 
+        return this.offsetTop + ( this.offsetParent ? this.offsetParent.documentOffsetTop - this.offsetParent.offsetTop : 0 );
+    }
+} );
+
+window.Object.defineProperty( Element.prototype, 'documentOffsetLeft', {
+    get: function () { 
+        return this.offsetLeft + ( this.offsetParent ? this.offsetParent.documentOffsetLeft - this.offsetParent.offsetLeft : 0 );
+    }
+} );
+
 var Game = require('game'),
     Hand = require('hand');
 
@@ -18,20 +30,33 @@ var gui = {
       controls: {
         toggle_notes: '#toggle-notes-btn'
       },
-      notes: '#notes-container'
+      notes: '#notes-container',
+      middle: {
+        top: {
+          id: "#game-screen-top"
+        }, 
+        bottom: {
+          id: "#game-screen-bottom"
+        }
+      },
+      side: {
+        left: {
+          id: '#game-screen-side-left'
+        },
+        right: {
+          id: '#game-screen-side-right'
+        }
+      }
     },
     events: {
       shown: 'shown.bs.modal'
     }
-  }
+  } 
 }
 
 //App entry point
 window.onload = function(){
   setupGUI();
-  var h = new Hand();
-  h.show(50, 50, 50);
-  console.log(h);
 }
 
 function setupGUI(){
@@ -70,12 +95,30 @@ function setupTutorialModal(){
 
 function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
-    //run this function when the newgame modal becomes visible
+    new Hand(13, true, false).show($(gui.modals.newgame.middle.bottom.id)[0], 50);
+    new Hand(13, false, false).show($(gui.modals.newgame.middle.top.id)[0], 50);
+    new Hand(13, false, true).show($(gui.modals.newgame.side.left.id)[0], 50);
+    new Hand(13, false, true).show($(gui.modals.newgame.side.right.id)[0], 50);
   });
 
   $(gui.modals.newgame.controls.toggle_notes)[0].onclick = function(){
-    $(gui.modals.newgame.notes).toggleClass('closed');
+    var baseline, start, delta;
+
+    baseline = $(gui.modals.newgame.notes);
+    start = baseline[0].documentOffsetTop;
+    baseline.toggleClass('closed');
+    delta = start - baseline[0].documentOffsetTop; 
+
+    shiftDownChildren($(gui.modals.newgame.middle.bottom.id).children(), delta);
+    shiftDownChildren($(gui.modals.newgame.side.left.id).children(), delta / 2);
+    shiftDownChildren($(gui.modals.newgame.side.right.id).children(), delta / 2);
   }
+}
+
+function shiftDownChildren(children, delta){
+  for (var i = children.length - 1; i >= 0; i--) {
+    children[i].style.top = parseInt(children[i].style.top) - delta + 'px';
+  };
 }
 
 //=============================================================================

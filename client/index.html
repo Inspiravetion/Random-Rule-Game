@@ -9,6 +9,7 @@
 </head>
 <body>
 
+
 <!-- TUTORIAL MODAL -->
 <div class="modal fade" id="tutorial-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog wide">
@@ -31,16 +32,18 @@
       <div id="game-modal-content">
 
         <div id="game-container">
-          <div id="game-screen"></div>
-          <div id="game-controls">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div id="toggle-notes-btn">toggle notes</div>
+          <div id="game-screen" class="game-screen">
+            <div id="game-screen-side-left" class="game-screen-side"></div>
+            <div id="game-screen-mid" class="game-screen-mid">
+              <div id="game-screen-top"></div>
+              <div id="game-screen-played-cards"></div>
+              <div id="game-screen-bottom"></div>
+            </div>
+            <div id="game-screen-side-right" class="game-screen-side"></div>
           </div>
         </div>
+
+        <div id="toggle-notes-btn">toggle notes</div>
 
         <div id="notes-container" ></div>
 
