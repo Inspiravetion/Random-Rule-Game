@@ -46,8 +46,7 @@
 .card {
   display: flex;
   flex-direction: column;
-  // height: 250px;
-  // width: 150px;
+
   height: 167px;
   width: 100px;
   box-shadow: black 0px 0px 5px 0px;
@@ -62,7 +61,7 @@
   width: 167px;
   box-shadow: black 0px 0px 5px 0px;
   border-radius: 5px; 
-  transition: top .3s ease;
+  transition: all .3s ease;
 }
 
 .card-top-container {

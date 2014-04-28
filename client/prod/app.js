@@ -38,7 +38,8 @@ var gui = {
         }, 
         bottom: {
           id: "#game-screen-bottom"
-        }
+        }, 
+        id: "game-screen-mid"
       },
       side: {
         left: {
@@ -100,6 +101,13 @@ function setupGameModal(){
     new Hand(13, false, false).show($(gui.modals.newgame.middle.top.id)[0], 50);
     new Hand(13, false, true).show($(gui.modals.newgame.side.left.id)[0], 50);
     new Hand(13, false, true).show($(gui.modals.newgame.side.right.id)[0], 50);
+
+    setTimeout(function(){
+      playLeftCard(4);
+      playRightCard(4);
+      playTopCard(4);
+      playBottomCard(4);
+    }, 2000);
   });
 
   $(gui.modals.newgame.controls.toggle_notes)[0].onclick = function(){
@@ -122,6 +130,57 @@ function shiftDownChildren(children, delta){
   };
 }
 
+function playLeftCard(i){
+  var children, parent, newTop, newLeft;
+
+  parent = $(gui.modals.newgame.side.left.id);
+  children = parent.children();
+
+  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
+  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).width()) * 1.5) + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
+
+function playRightCard(i){
+  var children, parent, newTop, newLeft;
+
+  parent = $(gui.modals.newgame.side.right.id);
+  children = parent.children();
+
+  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
+  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).width()) * 1.5) + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
+
+function playTopCard(i){
+  var children, parent, newTop, newLeft;
+
+  parent = $(gui.modals.newgame.middle.top.id);
+  children = parent.children();
+
+  newLeft = (parent.width() / 2) + $(gui.modals.newgame.side.left.id).width() -  (parseInt($(children[i]).width()) / 1.5) + 'px';
+  newTop = parseInt(children[i].style.top) + parseInt($(children[i]).height()) + 10 + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
+
+function playBottomCard(i){
+  var children, parent, newTop, newLeft;
+
+  parent = $(gui.modals.newgame.middle.bottom.id);
+  children = parent.children();
+
+  newLeft = (parent.width() / 2) + $(gui.modals.newgame.side.left.id).width() -  (parseInt($(children[i]).width()) / 2.5) + 'px';
+  newTop = parseInt(children[i].style.top) - parseInt($(children[i]).height()) - 10 + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
 //=============================================================================
 //HELPERS
 
@@ -143,7 +202,9 @@ function buildCard(id, user_card, rotate){
     class: 'card' + (rotate ? '-rotate' : '')
   });
 
-  cardContainer.hover(
+  if(user_card){
+
+    cardContainer.hover(
     function(){
       var t = parseInt(this.style.top) - 30;
       this.style.top = t + 'px';
@@ -151,9 +212,8 @@ function buildCard(id, user_card, rotate){
     function(){
       var t = parseInt(this.style.top) + 30;
       this.style.top = t + 'px';
-    });
+    });  
 
-  if(user_card){
     cardContainer = cardContainer[0];
     cardContainer.appendChild(buildTopContainer());
     cardContainer.appendChild(buildMidContainer());
