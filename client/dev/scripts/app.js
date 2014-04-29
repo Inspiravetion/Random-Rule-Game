@@ -11,7 +11,8 @@ window.Object.defineProperty( Element.prototype, 'documentOffsetLeft', {
 } );
 
 var Game = require('game'),
-    Hand = require('hand');
+    Hand = require('hand'),
+    AI   = require('ai');
 
 //=============================================================================
 //APP LOGIC
@@ -96,17 +97,9 @@ function setupTutorialModal(){
 
 function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
-    new Hand(13, true, false).show($(gui.modals.newgame.middle.bottom.id)[0], 50);
-    new Hand(13, false, false).show($(gui.modals.newgame.middle.top.id)[0], 50);
-    new Hand(13, false, true).show($(gui.modals.newgame.side.left.id)[0], 50);
-    new Hand(13, false, true).show($(gui.modals.newgame.side.right.id)[0], 50);
 
-    setTimeout(function(){
-      playLeftCard(4);
-      playRightCard(4);
-      playTopCard(4);
-      playBottomCard(4);
-    }, 2000);
+    var ai = new AI(new Player('charlie'));
+
   });
 
   $(gui.modals.newgame.controls.toggle_notes)[0].onclick = function(){
@@ -128,57 +121,26 @@ function shiftDownChildren(children, delta){
     children[i].style.top = parseInt(children[i].style.top) - delta + 'px';
   };
 }
-
-function playLeftCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.side.left.id);
-  children = parent.children();
-
-  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).width()) * 1.5) + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
-
-function playRightCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.side.right.id);
-  children = parent.children();
-
-  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).width()) * 1.5) + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
-
-function playTopCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.middle.top.id);
-  children = parent.children();
-
-  newLeft = (parent.width() / 2) + $(gui.modals.newgame.side.left.id).width() -  (parseInt($(children[i]).width()) / 1.5) + 'px';
-  newTop = parseInt(children[i].style.top) + parseInt($(children[i]).height()) + 10 + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
-
-function playBottomCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.middle.bottom.id);
-  children = parent.children();
-
-  newLeft = (parent.width() / 2) + $(gui.modals.newgame.side.left.id).width() -  (parseInt($(children[i]).width()) / 2.5) + 'px';
-  newTop = parseInt(children[i].style.top) - parseInt($(children[i]).height()) - 10 + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
 //=============================================================================
 //HELPERS
+//
+//
+//1.open modal
+//    => Make new users 
+//    => Make new AI and give it users
+//      =>make new Game and give users new hand based off the game
+//        =>for each card set the click listener to call playCard(my_index) on its hand
+//        =>when each card is played play it in the AI as well
+//
+//
+var Player = function(name){
+    this.rounds_won = 0;
+    this.name = name;
+    this.is_turn = false;
+}
+//
+//
+//
+//
+//
+//

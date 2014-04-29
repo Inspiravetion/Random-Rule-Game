@@ -12,7 +12,8 @@ window.Object.defineProperty( Element.prototype, 'documentOffsetLeft', {
 } );
 
 var Game = require('game'),
-    Hand = require('hand');
+    Hand = require('hand'),
+    AI   = require('ai');
 
 //=============================================================================
 //APP LOGIC
@@ -97,17 +98,9 @@ function setupTutorialModal(){
 
 function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
-    new Hand(13, true, false).show($(gui.modals.newgame.middle.bottom.id)[0], 50);
-    new Hand(13, false, false).show($(gui.modals.newgame.middle.top.id)[0], 50);
-    new Hand(13, false, true).show($(gui.modals.newgame.side.left.id)[0], 50);
-    new Hand(13, false, true).show($(gui.modals.newgame.side.right.id)[0], 50);
 
-    setTimeout(function(){
-      playLeftCard(4);
-      playRightCard(4);
-      playTopCard(4);
-      playBottomCard(4);
-    }, 2000);
+    var ai = new AI(new Player('charlie'));
+
   });
 
   $(gui.modals.newgame.controls.toggle_notes)[0].onclick = function(){
@@ -129,69 +122,320 @@ function shiftDownChildren(children, delta){
     children[i].style.top = parseInt(children[i].style.top) - delta + 'px';
   };
 }
-
-function playLeftCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.side.left.id);
-  children = parent.children();
-
-  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).width()) * 1.5) + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
-
-function playRightCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.side.right.id);
-  children = parent.children();
-
-  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).width()) * 1.5) + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
-
-function playTopCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.middle.top.id);
-  children = parent.children();
-
-  newLeft = (parent.width() / 2) + $(gui.modals.newgame.side.left.id).width() -  (parseInt($(children[i]).width()) / 1.5) + 'px';
-  newTop = parseInt(children[i].style.top) + parseInt($(children[i]).height()) + 10 + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
-
-function playBottomCard(i){
-  var children, parent, newTop, newLeft;
-
-  parent = $(gui.modals.newgame.middle.bottom.id);
-  children = parent.children();
-
-  newLeft = (parent.width() / 2) + $(gui.modals.newgame.side.left.id).width() -  (parseInt($(children[i]).width()) / 2.5) + 'px';
-  newTop = parseInt(children[i].style.top) - parseInt($(children[i]).height()) - 10 + 'px';
-
-  children[i].style.top = newTop;
-  children[i].style.left = newLeft;
-}
 //=============================================================================
 //HELPERS
+//
+//
+//1.open modal
+//    => Make new users 
+//    => Make new AI and give it users
+//      =>make new Game and give users new hand based off the game
+//        =>for each card set the click listener to call playCard(my_index) on its hand
+//        =>when each card is played play it in the AI as well
+//
+//
+var Player = function(name){
+    this.rounds_won = 0;
+    this.name = name;
+    this.is_turn = false;
+}
+//
+//
+//
+//
+//
+//
 
-},{"game":3,"hand":4}],2:[function(require,module,exports){
+},{"ai":2,"game":4,"hand":5}],2:[function(require,module,exports){
+
+//PROTOTYPAL ADDS
+//==============================================================================
+
+Object.defineProperty( Array.prototype, 'last', {
+  value: function(){
+    return this.length > 0 ? this[this.length - 1] : null; 
+  },
+  enumerable: false
+});
+
+Object.defineProperty( Array.prototype, 'getRandom', {
+  value: function(prev_idxs){
+    var min, max, rand;
+
+    if(this.length == 0 || prev_idxs.length == this.length){
+        return;
+    }
+
+    min = 0;
+    max = this.length;
+    rand = Math.floor(Math.random() * (max - min)) + min;
+
+    while(prev_idxs.contains(rand)){
+        rand = Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    prev_idxs.push(rand);
+    return this[rand];
+  },
+  enumerable: false
+});
+
+Object.defineProperty( Array.prototype, 'getRandomValues', {
+  value: function(num_vals){
+    var prev, vals;
+
+    prev = [];
+    vals = [];
+
+    for(var i = 0; i < num_vals; i++){
+        vals.push(this.getRandom(prev));
+    }
+
+    return vals;
+  },
+  enumerable: false
+});
+
+Object.defineProperty( Array.prototype, 'contains', {
+  value: function(obj){
+    return this.indexOf(obj) != -1;
+  },
+  enumerable: false
+});
+
+//GAME CLASSES
+//==============================================================================
+var Hand = require('hand');
+
+
+var AI = function(player){
+    var players = [];
+    players.push(player);
+    players.push(new Player('player 1'));
+    players.push(new Player('player 2'));
+    players.push(new Player('player 3'));
+
+    this.level = 0;
+    this.played_turns = 0;
+    this.game = new Game(this.level, players, this);
+
+    this.nextRound();
+}
+
+AI.prototype.nextGame = function() {
+    this.level++;
+    this.game = new Game(this.level, this.game.players);
+};
+
+AI.prototype.nextRound = function() {
+    if(this.game.curr_round){
+        this.game.addRound(this.game.curr_round);
+    }
+
+    this.game.rounds.push(new Round());
+};
+
+AI.prototype.playCard = function(player, card) {
+    this.game.rounds.last().playTurn(player, card);
+
+    if(this.played_turns != 3){
+        this.played_turns++;
+    } else {
+        this.played_turns = 0;
+        console.log(this.pickRoundWinner());
+    }
+};
+
+AI.prototype.pickRoundWinner = function() {
+    var winner = null;
+
+    this.game.round_rules.forEach(function(rule){
+        winner = (rule.pickWinner(this.game) || winner);
+    }.bind(this));
+
+    this.game.rounds.last().winner = winner;
+    return winner;
+};
+
+AI.prototype.pickGameWinner = function() {
+    return this.game.hand_rule.pickWinner(this.game);
+};
+
+
+/**
+ * A Game holds all of the state for the current game being played. This includes
+ * the rules of the game and the rounds that have been played in order.
+ * @param {int} level 
+ */
+var Game = function(level, players, ai){
+    this.round_rules = this.getRoundRules(level + 3);
+    this.hand_rule = this.getHandRule();
+    this.rounds = [];
+    this.players = players;
+    this.curr_round = null;
+
+    this.newHand(ai);
+}
+
+Game.prototype.getRoundRules = function(num_rules) {
+    return ROUNDRULES;//.getRandomValues(num_rules);
+};
+
+Game.prototype.getHandRule = function() {
+    return HANDRULES[0];//.getRandom([]);
+};
+
+Game.prototype.addRound = function(round) {
+    this.rounds.push(round);
+};
+
+Game.prototype.newHand = function(ai) {
+    var btm, top,lft, rght;
+
+    btm = new Hand(13, {
+      user_card: true,
+      rotate: false,
+      position: 'bottom',
+      player: this.players[0],
+      ai: ai
+    }).show($("#game-screen-bottom")[0], 50);
+
+    lft = new Hand(13, {
+      user_card: false,
+      rotate: true,
+      position: 'left',
+      player: this.players[1],
+      ai: ai
+    }).show($('#game-screen-side-left')[0], 50);
+
+    top = new Hand(13, {
+      user_card: false,
+      rotate: false,
+      position: 'top',
+      player: this.players[2],
+      ai: ai
+    }).show($("#game-screen-top")[0], 50);
+
+    rght = new Hand(13, {
+      user_card: false,
+      rotate: true,
+      position: 'right',
+      player: this.players[3],
+      ai: ai
+    }).show($('#game-screen-side-right')[0], 50);
+};
+
+
+/**
+ * Round holds the information for each round of play. A round ends once every
+ * player has played a card.
+ */
+var Round = function(){
+    this.turns = [];
+    this.winner = null;
+}
+
+Round.prototype.playTurn = function(player, card) {
+    this.turns.push({ 'player' : player, 'card': card });
+};
+
+
+
+/**
+ * Rule to determine who won either a hand or a round
+ * @param {function} solver function that takes a game and determines the winner 
+ * of either the current round or of the whole hand
+ */
+var Rule = function(solver){
+    this.solver = solver
+}
+
+Rule.prototype.pickWinner = function(game) {
+    return this.solver(game);
+};
+
+
+//GAME CONSTANTS
+//==============================================================================
+function highCardWins(game){
+    var round, winner;
+
+    winner = null;
+    round = game.rounds.last();
+    
+    round.turns.forEach(function(turn){
+        if(!winner){
+            winner = turn;
+        }
+
+        if(winner.card.value < turn.card.value){
+            winner = turn;
+        }
+    });
+
+    return winner;
+}
+
+function eightsAreWild(game){
+    var round, winner;
+
+    winner = null;
+    round = game.rounds.last();
+
+    round.turns.forEach(function(turn){
+        if(turn.card.value == 8 && (!winner || winner.card.value != 8)){
+            winner = turn;
+        }
+    });
+
+    return winner;
+}
+
+var ROUNDRULES = [
+    new Rule(highCardWins),
+    new Rule(eightsAreWild)
+]
+
+function MostRounds(game){
+    var rounds, winner;
+
+    rounds = game.rounds;
+
+    winner = rounds[0].winner
+    rounds.forEach(function(round){
+        round.winner.player.rounds_won++
+
+        if(winner.player.rounds_won < round.winner.player.rounds_won){
+            winner = round.winner;
+        }
+    });
+
+    return winner.player;
+}
+
+var HANDRULES = [
+    new Rule(MostRounds)
+]
+
+module.exports = AI;
+
+
+var Player = function(name){
+    this.rounds_won = 0;
+    this.name = name;
+    this.is_turn = false;
+}
+
+
+
+},{"hand":5}],3:[function(require,module,exports){
 //Cards are responsive as long as their height:width ratio stays 10:6
 //Card type pictures need to be squares but can be swapped out
 
-function Card(id, user_card, rotate){
+function Card(id, user_card, rotate, val, suit){
   this.elem = buildCard(id, user_card, rotate);
-  this.suit = null;
-  this.val  = null;
+  this.suit = suit;
+  this.value  = val;
 }
 
 function buildCard(id, user_card, rotate){
@@ -279,7 +523,7 @@ function buildBtmContainer(){
 
 module.exports = Card;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var Hand = require('hand');
 
 function Game(){
@@ -291,16 +535,30 @@ function Game(){
 
 module.exports = Game;
 
-},{"hand":4}],4:[function(require,module,exports){
+},{"hand":5}],5:[function(require,module,exports){
 var Card = require('cards');
 
-function Hand(size, user_card, rotate){
+function Hand(size, opts){
   this.cards = [];
-  this.user_card = user_card;
-  this.rotate = rotate;
+  this.user_card = opts.user_card;
+  this.rotate = opts.rotate;
+  this.position = opts.position;
+  this.player = opts.player;
+  this.ai = opts.ai;
 
+  var card;
   for(var i = 0; i < size; i++){
-    this.cards.push(new Card(i, user_card, rotate));
+    card = new Card(i, this.user_card, this.rotate, i);
+    
+    // if(this.position == "bottom"){
+      card.elem.onclick = function(index){
+        // if(this.player.is_turn){
+          this.playCard(index);
+        // }
+      }.bind(this,[i]);
+    // }
+
+    this.cards.push(card);
   }
 }
 
@@ -342,7 +600,28 @@ Hand.prototype.show = function(anchor){
 
     anchor.appendChild(e);
   }.bind(this));
+
+  return this;
 }
+
+Hand.prototype.playCard = function(i) {
+  switch(this.position){
+    case "left":
+      playLeftCard(i);
+      break;
+    case "right":
+      playRightCard(i);
+      break;
+    case "top":
+      playTopCard(i);
+      break;
+    case "bottom":
+      playBottomCard(i);
+      break; 
+  }
+
+  this.ai.playCard(this.player, this.cards[i]);
+};
 
 function getInDomWidth(elem){
   var width, e;
@@ -370,5 +649,59 @@ function getInDomHeight(elem){
   return width;
 }
 
+function playLeftCard(i){
+  var children, parent, newTop, newLeft;
+
+  parent = $('#game-screen-side-left');
+  children = parent.children();
+
+  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
+  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).width()) * 1.5) + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
+
+function playRightCard(i){
+  var children, parent, newTop, newLeft;
+
+  parent = $('#game-screen-side-right');
+  children = parent.children();
+
+  newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
+  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).width()) * 1.5) + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
+
+function playTopCard(i){
+  var children, parent, newTop, newLeft;
+
+  parent = $('#game-screen-top');
+  children = parent.children();
+
+  newLeft = (parent.width() / 2) + $('#game-screen-side-left').width() -  (parseInt($(children[i]).width()) / 1) + 'px';
+  newTop = parseInt(children[i].style.top) + parseInt($(children[i]).height()) + 10 + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
+
+function playBottomCard(i){
+  var children, parent, newTop, newLeft;
+
+  console.log(i);
+
+  parent = $("#game-screen-bottom");
+  children = parent.children();
+
+  newLeft = (parent.width() / 2) + $('#game-screen-side-left').width() -  (parseInt($(children[i]).width()) / 3) + 'px';
+  newTop = parseInt(children[i].style.top) - parseInt($(children[i]).height()) - 10 + 'px';
+
+  children[i].style.top = newTop;
+  children[i].style.left = newLeft;
+}
+
 module.exports = Hand;
-},{"cards":2}]},{},[1])
+},{"cards":3}]},{},[1])

@@ -35,7 +35,7 @@
 }
 
 #game-modal-content > #notes-container {
-  flex-grow: 1;
+  flex-grow: .6;
   background-color: #0ff;
 }
 
@@ -142,7 +142,7 @@
 
 #game-screen-played-cards {
   flex-grow: 1;
-  background-color: blue;
+  background-color: green;
 }
 
 #game-screen-bottom {
