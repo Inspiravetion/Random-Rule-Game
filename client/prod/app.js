@@ -99,7 +99,8 @@ function setupTutorialModal(){
 function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
 
-    var ai = new AI(new Player('charlie'));
+    //BE SURE TO REMOVE
+    window.ai = new AI(new Player('charlie'));
 
   });
 
@@ -162,13 +163,17 @@ Object.defineProperty( Array.prototype, 'getRandom', {
   value: function(prev_idxs){
     var min, max, rand;
 
-    if(this.length == 0 || prev_idxs.length == this.length){
+    if(this.length == 0 || (prev_idxs && prev_idxs.length == this.length)){
         return;
     }
 
     min = 0;
     max = this.length;
     rand = Math.floor(Math.random() * (max - min)) + min;
+
+    if(!prev_idxs){
+      return this[rand];
+    }
 
     while(prev_idxs.contains(rand)){
         rand = Math.floor(Math.random() * (max - min)) + min;
@@ -180,7 +185,7 @@ Object.defineProperty( Array.prototype, 'getRandom', {
   enumerable: false
 });
 
-Object.defineProperty( Array.prototype, 'getRandomValues', {
+Object.defineProperty( Array.prototype, 'getUniqueRandomValues', {
   value: function(num_vals){
     var prev, vals;
 
@@ -189,6 +194,21 @@ Object.defineProperty( Array.prototype, 'getRandomValues', {
 
     for(var i = 0; i < num_vals; i++){
         vals.push(this.getRandom(prev));
+    }
+
+    return vals;
+  },
+  enumerable: false
+});
+
+Object.defineProperty( Array.prototype, 'getRandomValues', {
+  value: function(num_vals){
+    var vals;
+
+    vals = [];
+
+    for(var i = 0; i < num_vals; i++){
+        vals.push(this.getRandom());
     }
 
     return vals;
@@ -278,7 +298,7 @@ var Game = function(level, players, ai){
 }
 
 Game.prototype.getRoundRules = function(num_rules) {
-    return ROUNDRULES;//.getRandomValues(num_rules);
+    return ROUNDRULES;//.getUniqueRandomValues(num_rules);
 };
 
 Game.prototype.getHandRule = function() {
@@ -432,13 +452,28 @@ var Player = function(name){
 //Cards are responsive as long as their height:width ratio stays 10:6
 //Card type pictures need to be squares but can be swapped out
 
-function Card(id, user_card, rotate, val, suit){
-  this.elem = buildCard(id, user_card, rotate);
-  this.suit = suit;
+function Card(id, user_card, rotate, val, src){
+  this.user_card = user_card;
   this.value  = val;
+  this.src = src;
+  this.elem = this.buildCard(id, user_card, rotate);
 }
 
-function buildCard(id, user_card, rotate){
+Card.prototype.show = function() {
+  if(!this.user_card){
+    $(this.elem).css({'background-color' : 'white'});
+    this.elem.appendChild(this.buildTopContainer());
+    this.elem.appendChild(this.buildMidContainer());
+    this.elem.appendChild(this.buildBtmContainer());
+  }
+};
+
+Card.prototype.unshow = function() {
+  $(this.elem).empty();
+  $(this.elem).css({'background-color' : 'red'});
+};
+
+Card.prototype.buildCard = function(id, user_card, rotate){
   var cardContainer;
 
   cardContainer = $('<div/>', {
@@ -459,9 +494,9 @@ function buildCard(id, user_card, rotate){
     });  
 
     cardContainer = cardContainer[0];
-    cardContainer.appendChild(buildTopContainer());
-    cardContainer.appendChild(buildMidContainer());
-    cardContainer.appendChild(buildBtmContainer());
+    cardContainer.appendChild(this.buildTopContainer());
+    cardContainer.appendChild(this.buildMidContainer());
+    cardContainer.appendChild(this.buildBtmContainer());
   } else {
     cardContainer.css({ 'background-color' : 'red' });
     cardContainer = cardContainer[0];
@@ -470,7 +505,7 @@ function buildCard(id, user_card, rotate){
   return cardContainer;
 }
 
-function buildTopContainer(){
+Card.prototype.buildTopContainer = function(){
   var topContainer, type;
 
   topContainer = $('<div/>', {
@@ -479,7 +514,7 @@ function buildTopContainer(){
 
   type = $('<img/>', {
     class: 'small-card-type abs-left',
-    src: 'prod/images/default_card_type.png'
+    src: this.src
   })[0];
 
   topContainer.appendChild(type);
@@ -487,7 +522,7 @@ function buildTopContainer(){
   return topContainer;
 }
 
-function buildMidContainer(){
+Card.prototype.buildMidContainer = function(){
   var midContainer, type;
 
   midContainer = $('<div/>', {
@@ -496,7 +531,7 @@ function buildMidContainer(){
 
   type = $('<img/>', {
     class: 'large-card-type',
-    src: 'prod/images/default_card_type.png'
+    src: this.src
   })[0];
 
   midContainer.appendChild(type);
@@ -504,7 +539,7 @@ function buildMidContainer(){
   return midContainer;
 }
 
-function buildBtmContainer(){
+Card.prototype.buildBtmContainer = function(){
   var btmContainer, type;
 
   btmContainer = $('<div/>', {
@@ -513,7 +548,7 @@ function buildBtmContainer(){
 
   type = $('<img/>', {
     class: 'small-card-type abs-right',
-    src: 'prod/images/default_card_type.png'
+    src: this.src
   })[0];
 
   btmContainer.appendChild(type);
@@ -538,6 +573,19 @@ module.exports = Game;
 },{"hand":5}],5:[function(require,module,exports){
 var Card = require('cards');
 
+var CARDVALUES = [
+  { val: 1, src: 'prod/images/1.jpg' },
+  { val: 2, src: 'prod/images/2.jpg' },
+  { val: 3, src: 'prod/images/3.jpg' },
+  { val: 4, src: 'prod/images/4.jpg' },
+  { val: 5, src: 'prod/images/5.jpg' },
+  { val: 6, src: 'prod/images/6.jpg' },
+  { val: 7, src: 'prod/images/7.jpg' },
+  { val: 8, src: 'prod/images/8.jpg' },
+  { val: 9, src: 'prod/images/9.jpg' },
+  { val: 10, src: 'prod/images/10.jpg' }
+];
+
 function Hand(size, opts){
   this.cards = [];
   this.user_card = opts.user_card;
@@ -546,10 +594,9 @@ function Hand(size, opts){
   this.player = opts.player;
   this.ai = opts.ai;
 
-  var card;
-  for(var i = 0; i < size; i++){
-    card = new Card(i, this.user_card, this.rotate, i);
-    
+  CARDVALUES.getRandomValues(size).forEach(function(cardInfo, i){
+    var card = new Card(i, this.user_card, this.rotate, cardInfo.val, cardInfo.src);
+
     // if(this.position == "bottom"){
       card.elem.onclick = function(index){
         // if(this.player.is_turn){
@@ -557,9 +604,9 @@ function Hand(size, opts){
         // }
       }.bind(this,[i]);
     // }
-
+    
     this.cards.push(card);
-  }
+  }.bind(this));
 }
 
 Hand.prototype.show = function(anchor){
@@ -576,7 +623,7 @@ Hand.prototype.show = function(anchor){
   padding = (outter - neededLength) / 2;
 
   if(this.rotate){
-    startx += 10;
+    startx += (anchor.getBoundingClientRect().width - cardSz) * 1.9;
     starty += padding;
   } else {
     startx += padding;
@@ -607,16 +654,16 @@ Hand.prototype.show = function(anchor){
 Hand.prototype.playCard = function(i) {
   switch(this.position){
     case "left":
-      playLeftCard(i);
+      this.playLeftCard(i);
       break;
     case "right":
-      playRightCard(i);
+      this.playRightCard(i);
       break;
     case "top":
-      playTopCard(i);
+      this.playTopCard(i);
       break;
     case "bottom":
-      playBottomCard(i);
+      this.playBottomCard(i);
       break; 
   }
 
@@ -649,33 +696,35 @@ function getInDomHeight(elem){
   return width;
 }
 
-function playLeftCard(i){
+Hand.prototype.playLeftCard = function(i){
   var children, parent, newTop, newLeft;
 
   parent = $('#game-screen-side-left');
   children = parent.children();
 
   newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).width()) * 1.5) + 'px';
+  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).height()) * 1.5) + 'px';
 
   children[i].style.top = newTop;
   children[i].style.left = newLeft;
+  this.cards[i].show();
 }
 
-function playRightCard(i){
+Hand.prototype.playRightCard = function(i){
   var children, parent, newTop, newLeft;
 
   parent = $('#game-screen-side-right');
   children = parent.children();
 
   newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).width()) * 1.5) + 'px';
+  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).height()) * 1.5) + 'px';
 
   children[i].style.top = newTop;
   children[i].style.left = newLeft;
+  this.cards[i].show();
 }
 
-function playTopCard(i){
+Hand.prototype.playTopCard = function(i){
   var children, parent, newTop, newLeft;
 
   parent = $('#game-screen-top');
@@ -686,9 +735,10 @@ function playTopCard(i){
 
   children[i].style.top = newTop;
   children[i].style.left = newLeft;
+  this.cards[i].show();
 }
 
-function playBottomCard(i){
+Hand.prototype.playBottomCard = function(i){
   var children, parent, newTop, newLeft;
 
   console.log(i);
