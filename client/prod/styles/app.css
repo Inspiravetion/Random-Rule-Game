@@ -42,7 +42,8 @@
   width: 100px;
   box-shadow: black 0px 0px 5px 0px;
   border-radius: 5px;
-  transition: all 0.3s ease; }
+  transition: all 0.3s ease;
+  z-index: 5; }
 
 .card-rotate {
   display: flex;
@@ -52,7 +53,8 @@
   width: 100px;
   box-shadow: black 0px 0px 5px 0px;
   border-radius: 5px;
-  transition: all 0.3s ease; }
+  transition: all 0.3s ease;
+  z-index: 5; }
 
 .card-top-container {
   flex-grow: 1;
@@ -64,7 +66,7 @@
   overflow: hidden; }
 
 .card-mid-container {
-  flex-grow: 5;
+  flex-grow: 8;
   background-color: #fff;
   display: inline-block;
   position: relative;
@@ -102,10 +104,12 @@
   display: flex; }
 
 .game-screen-side {
+  position: relative;
   background-color: green;
   flex-grow: 1; }
 
 .game-screen-mid {
+  position: relative;
   background-color: green;
   flex-grow: 4;
   display: flex;
@@ -120,7 +124,8 @@
 
 #game-screen-played-cards {
   flex-grow: 1;
-  background-color: green; }
+  background-color: green;
+  z-index: 1; }
 
 #game-screen-bottom {
   flex-grow: 1.25;

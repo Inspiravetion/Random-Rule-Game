@@ -98,8 +98,7 @@ function setupTutorialModal(){
 function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
 
-    //BE SURE TO REMOVE
-    window.ai = new AI(new Player('you'));
+    new AI(new Player('you'));
 
   });
 

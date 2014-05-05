@@ -99,8 +99,7 @@ function setupTutorialModal(){
 function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
 
-    //BE SURE TO REMOVE
-    window.ai = new AI(new Player('you'));
+    new AI(new Player('you'));
 
   });
 
@@ -246,21 +245,33 @@ var Hand = require('hand');
 
 
 var AI = function(player){
-    var players = [];
-
-    player.is_turn = true;
-
-    players.push(player);
-    players.push(new Player('player 1'));
-    players.push(new Player('player 2'));
-    players.push(new Player('player 3'));
-
-    this.level = 0;
-    this.played_turns = 0;
-    this.game = new Game(this.level, players, this);
-
-    this.nextRound();
+    this.init(player, true);
 }
+
+AI.prototype.init = function(player, first) {
+  var players = [];
+
+  if(!first){
+    $("#game-screen-side-left").empty();
+    $("#game-screen-side-right").empty();
+    $("#game-screen-top").empty();
+    $("#game-screen-bottom").empty();
+  }
+
+  player.is_turn = true;
+
+  players.push(player);
+  players.push(new Player('player 1'));
+  players.push(new Player('player 2'));
+  players.push(new Player('player 3'));
+
+  this.level = 0;
+  this.played_turns = 0;
+  this.played_hands = -1;
+  this.game = new Game(this.level, players, this);
+
+  this.nextRound();
+};
 
 AI.prototype.nextGame = function() {
     this.level++;
@@ -273,6 +284,7 @@ AI.prototype.nextRound = function() {
     }
 
     this.game.rounds.push(new Round());
+    this.played_hands++;
 };
 
 AI.prototype.playCard = function(player, card) {
@@ -319,26 +331,33 @@ AI.prototype.playBotHands = function() {
       clearInterval(timer);
       winner = this.pickRoundWinner();
       players[0].is_turn = true;
-
-      setTimeout(function(){ this.alertWinner(winner) }.bind(this), 1000);
+      setTimeout(function(){ 
+        this.alertWinner(winner) 
+        if(this.played_hands == this.game.num_hands){
+          this.init(new Player("you"));
+        }
+      }.bind(this), 1000);
 
       return;
     }
     players[i].hand.playRandomCard();
     i++;
-  }.bind(this), 500);
+  }.bind(this), 1000);
 };
 
 AI.prototype.alertWinner = function(winner) {
   var alert = $('<div>', {
-    class: "alert alert-info fade in col-md-6 col-md-offset-3",
+    class: "alert alert-info fade in",
     text: 'Round Winner: ' + winner.player.name 
   });
 
   alert.css({
-    'position' : 'relative',
-    'top' : '70px',
-    'margin-bottom' : '0px'
+    'position' : 'absolute',
+    'top' : '270px',
+    'margin-bottom' : '0px',
+    'left': '35%',
+    'width': '250px',
+    'z-index': '5'
   });
   $("#game-screen-played-cards").append(alert);
 
@@ -356,6 +375,7 @@ var Game = function(level, players, ai){
     this.rounds = [];
     this.players = players;
     this.curr_round = null;
+    this.num_hands = 13;
 
     this.newHand(ai);
 }
@@ -375,7 +395,7 @@ Game.prototype.addRound = function(round) {
 Game.prototype.newHand = function(ai) {
     var btm, top,lft, rght;
 
-    this.players[0].hand = new Hand(13, {
+    this.players[0].hand = new Hand(this.num_hands, {
       user_card: true,
       rotate: false,
       position: 'bottom',
@@ -383,7 +403,7 @@ Game.prototype.newHand = function(ai) {
       ai: ai
     }).show($("#game-screen-bottom")[0], 50);
 
-    this.players[1].hand = new Hand(13, {
+    this.players[1].hand = new Hand(this.num_hands, {
       user_card: false,
       rotate: true,
       position: 'left',
@@ -391,7 +411,7 @@ Game.prototype.newHand = function(ai) {
       ai: ai
     }).show($('#game-screen-side-left')[0], 50);
 
-    this.players[2].hand = new Hand(13, {
+    this.players[2].hand = new Hand(this.num_hands, {
       user_card: false,
       rotate: false,
       position: 'top',
@@ -399,7 +419,7 @@ Game.prototype.newHand = function(ai) {
       ai: ai
     }).show($("#game-screen-top")[0], 50);
 
-    this.players[3].hand = new Hand(13, {
+    this.players[3].hand = new Hand(this.num_hands, {
       user_card: false,
       rotate: true,
       position: 'right',
@@ -684,8 +704,12 @@ Hand.prototype.show = function(anchor){
   var startx, starty, cardSz, neededLength, padding, shift, outter;
 
   shift = this.user_card ? 50 : 20;
-  startx = anchor.documentOffsetLeft;
-  starty = anchor.documentOffsetTop;
+  startx = 0;//anchor.documentOffsetLeft;
+  starty = 0;//anchor.documentOffsetTop;
+
+  console.log(startx);
+  console.log(starty);
+  console.log(anchor);
 
   cardSz = this.rotate ? getInDomHeight(this.cards[0].elem) : getInDomWidth(this.cards[0].elem);
   neededLength = cardSz + ((this.cards.length - 1) * shift);
@@ -711,7 +735,12 @@ Hand.prototype.show = function(anchor){
       e.style.left     = startx + 'px';
       starty += shift;
     } else {
-      e.style.top      = starty + 'px';
+
+      if(this.user_card){
+        e.style.bottom = starty + 'px';
+      } else {
+        e.style.top = starty + 'px';
+      }
       e.style.left     = startx + 'px';
       startx += shift;
     }
@@ -774,7 +803,7 @@ Hand.prototype.playLeftCard = function(i){
   children = parent.children();
 
   newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).height()) * 1.5) + 'px';
+  newLeft = parseInt(children[i].style.left) + (parseInt($(children[i]).height()) + 30) + 'px';
 
   children[i].style.top = newTop;
   children[i].style.left = newLeft;
@@ -788,7 +817,7 @@ Hand.prototype.playRightCard = function(i){
   children = parent.children();
 
   newTop = (parent.height() / 2) -  (parseInt($(children[i]).height()) / 2) + 'px';
-  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).height()) * 1.5) + 'px';
+  newLeft = parseInt(children[i].style.left) - (parseInt($(children[i]).height()) + 30) + 'px';
 
   children[i].style.top = newTop;
   children[i].style.left = newLeft;
@@ -801,7 +830,7 @@ Hand.prototype.playTopCard = function(i){
   parent = $('#game-screen-top');
   children = parent.children();
 
-  newLeft = (parent.width() / 2) + $('#game-screen-side-left').width() -  (parseInt($(children[i]).width()) / 1) + 'px';
+  newLeft = (parent.width() / 2) -  (parseInt($(children[i]).width())) + 'px';
   newTop = parseInt(children[i].style.top) + parseInt($(children[i]).height()) + 10 + 'px';
 
   children[i].style.top = newTop;
@@ -810,15 +839,15 @@ Hand.prototype.playTopCard = function(i){
 }
 
 Hand.prototype.playBottomCard = function(i){
-  var children, parent, newTop, newLeft;
+  var children, parent, newBtm, newLeft;
 
   parent = $("#game-screen-bottom");
   children = parent.children();
 
-  newLeft = (parent.width() / 2) + $('#game-screen-side-left').width() -  (parseInt($(children[i]).width()) / 3) + 'px';
-  newTop = parseInt(children[i].style.top) - parseInt($(children[i]).height()) - 10 + 'px';
+  newLeft = (parent.width() / 2) + (parseInt($(children[i]).width()) / 2) + 'px';
+  newBtm = parseInt(children[i].style.bottom) + parseInt($(children[i]).height()) + 10 + 'px';
 
-  children[i].style.top = newTop;
+  children[i].style.bottom = newBtm;
   children[i].style.left = newLeft;
 }
 
