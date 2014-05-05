@@ -100,7 +100,7 @@ function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
 
     //BE SURE TO REMOVE
-    window.ai = new AI(new Player('charlie'));
+    window.ai = new AI(new Player('you'));
 
   });
 
@@ -131,7 +131,9 @@ function shiftDownChildren(children, delta){
 //    => Make new users 
 //    => Make new AI and give it users
 //      =>make new Game and give users new hand based off the game
-//        =>for each card set the click listener to call playCard(my_index) on its hand
+//        =>for each card set the click listener to call pickRoundWinner
+//        
+//        (my_index) on its hand
 //        =>when each card is played play it in the AI as well
 //
 //
@@ -161,10 +163,18 @@ Object.defineProperty( Array.prototype, 'last', {
 
 Object.defineProperty( Array.prototype, 'getRandom', {
   value: function(prev_idxs){
+    var rand = this.getRandomIndex(prev_idxs);
+    return rand != null ? this[rand] : null;
+  },
+  enumerable: false
+});
+
+Object.defineProperty( Array.prototype, 'getRandomIndex', {
+  value: function(prev_idxs){
     var min, max, rand;
 
     if(this.length == 0 || (prev_idxs && prev_idxs.length == this.length)){
-        return;
+        return null;
     }
 
     min = 0;
@@ -172,7 +182,7 @@ Object.defineProperty( Array.prototype, 'getRandom', {
     rand = Math.floor(Math.random() * (max - min)) + min;
 
     if(!prev_idxs){
-      return this[rand];
+      return rand;
     }
 
     while(prev_idxs.contains(rand)){
@@ -180,7 +190,7 @@ Object.defineProperty( Array.prototype, 'getRandom', {
     }
 
     prev_idxs.push(rand);
-    return this[rand];
+    return rand;
   },
   enumerable: false
 });
@@ -223,6 +233,13 @@ Object.defineProperty( Array.prototype, 'contains', {
   enumerable: false
 });
 
+Object.defineProperty( Array.prototype, 'removeIndex', {
+  value: function(i){
+    return this.splice(i, 1);
+  },
+  enumerable: false
+});
+
 //GAME CLASSES
 //==============================================================================
 var Hand = require('hand');
@@ -230,6 +247,9 @@ var Hand = require('hand');
 
 var AI = function(player){
     var players = [];
+
+    player.is_turn = true;
+
     players.push(player);
     players.push(new Player('player 1'));
     players.push(new Player('player 2'));
@@ -262,7 +282,6 @@ AI.prototype.playCard = function(player, card) {
         this.played_turns++;
     } else {
         this.played_turns = 0;
-        console.log(this.pickRoundWinner());
     }
 };
 
@@ -274,6 +293,13 @@ AI.prototype.pickRoundWinner = function() {
     }.bind(this));
 
     this.game.rounds.last().winner = winner;
+
+    this.game.rounds.last().turns.forEach(function(turn, i){
+      turn.card.hide();
+    });
+
+    this.nextRound();
+
     return winner;
 };
 
@@ -281,6 +307,43 @@ AI.prototype.pickGameWinner = function() {
     return this.game.hand_rule.pickWinner(this.game);
 };
 
+AI.prototype.playBotHands = function() {
+  var players, i;
+
+  players = this.game.players;
+  i = 1;
+
+  var timer = setInterval(function(){
+    var winner;
+    if(i == players.length){
+      clearInterval(timer);
+      winner = this.pickRoundWinner();
+      players[0].is_turn = true;
+
+      setTimeout(function(){ this.alertWinner(winner) }.bind(this), 1000);
+
+      return;
+    }
+    players[i].hand.playRandomCard();
+    i++;
+  }.bind(this), 500);
+};
+
+AI.prototype.alertWinner = function(winner) {
+  var alert = $('<div>', {
+    class: "alert alert-info fade in col-md-6 col-md-offset-3",
+    text: 'Round Winner: ' + winner.player.name 
+  });
+
+  alert.css({
+    'position' : 'relative',
+    'top' : '70px',
+    'margin-bottom' : '0px'
+  });
+  $("#game-screen-played-cards").append(alert);
+
+  setTimeout(function(){ alert.alert('close'); }, 1500);
+};
 
 /**
  * A Game holds all of the state for the current game being played. This includes
@@ -312,7 +375,7 @@ Game.prototype.addRound = function(round) {
 Game.prototype.newHand = function(ai) {
     var btm, top,lft, rght;
 
-    btm = new Hand(13, {
+    this.players[0].hand = new Hand(13, {
       user_card: true,
       rotate: false,
       position: 'bottom',
@@ -320,7 +383,7 @@ Game.prototype.newHand = function(ai) {
       ai: ai
     }).show($("#game-screen-bottom")[0], 50);
 
-    lft = new Hand(13, {
+    this.players[1].hand = new Hand(13, {
       user_card: false,
       rotate: true,
       position: 'left',
@@ -328,7 +391,7 @@ Game.prototype.newHand = function(ai) {
       ai: ai
     }).show($('#game-screen-side-left')[0], 50);
 
-    top = new Hand(13, {
+    this.players[2].hand = new Hand(13, {
       user_card: false,
       rotate: false,
       position: 'top',
@@ -336,11 +399,11 @@ Game.prototype.newHand = function(ai) {
       ai: ai
     }).show($("#game-screen-top")[0], 50);
 
-    rght = new Hand(13, {
+    this.players[3].hand = new Hand(13, {
       user_card: false,
       rotate: true,
       position: 'right',
-      player: this.players[3],
+      player: this.players[3], 
       ai: ai
     }).show($('#game-screen-side-right')[0], 50);
 };
@@ -454,23 +517,24 @@ var Player = function(name){
 
 function Card(id, user_card, rotate, val, src){
   this.user_card = user_card;
+  this.showing = user_card;
   this.value  = val;
   this.src = src;
   this.elem = this.buildCard(id, user_card, rotate);
 }
 
 Card.prototype.show = function() {
-  if(!this.user_card){
+  if(!this.user_card && !this.showing){
     $(this.elem).css({'background-color' : 'white'});
     this.elem.appendChild(this.buildTopContainer());
     this.elem.appendChild(this.buildMidContainer());
     this.elem.appendChild(this.buildBtmContainer());
   }
+  this.showing = true;
 };
 
-Card.prototype.unshow = function() {
-  $(this.elem).empty();
-  $(this.elem).css({'background-color' : 'red'});
+Card.prototype.hide = function() {
+  $(this.elem).css({'visibility' : 'hidden'});
 };
 
 Card.prototype.buildCard = function(id, user_card, rotate){
@@ -593,21 +657,28 @@ function Hand(size, opts){
   this.position = opts.position;
   this.player = opts.player;
   this.ai = opts.ai;
+  this.prev_played = [];
 
   CARDVALUES.getRandomValues(size).forEach(function(cardInfo, i){
     var card = new Card(i, this.user_card, this.rotate, cardInfo.val, cardInfo.src);
 
-    // if(this.position == "bottom"){
+    if(this.position == "bottom"){
       card.elem.onclick = function(index){
-        // if(this.player.is_turn){
+        if(this.player.is_turn){
           this.playCard(index);
-        // }
+          this.player.is_turn = false;
+          this.ai.playBotHands();
+        } 
       }.bind(this,[i]);
-    // }
+    }
     
     this.cards.push(card);
   }.bind(this));
 }
+
+Hand.prototype.playRandomCard = function() {
+  this.playCard(this.cards.getRandomIndex(this.prev_played));
+};
 
 Hand.prototype.show = function(anchor){
   var startx, starty, cardSz, neededLength, padding, shift, outter;
@@ -740,8 +811,6 @@ Hand.prototype.playTopCard = function(i){
 
 Hand.prototype.playBottomCard = function(i){
   var children, parent, newTop, newLeft;
-
-  console.log(i);
 
   parent = $("#game-screen-bottom");
   children = parent.children();

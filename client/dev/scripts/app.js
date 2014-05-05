@@ -99,7 +99,7 @@ function setupGameModal(){
   $(gui.modals.newgame.id).on(gui.modals.events.shown, function(e){
 
     //BE SURE TO REMOVE
-    window.ai = new AI(new Player('charlie'));
+    window.ai = new AI(new Player('you'));
 
   });
 
@@ -130,7 +130,9 @@ function shiftDownChildren(children, delta){
 //    => Make new users 
 //    => Make new AI and give it users
 //      =>make new Game and give users new hand based off the game
-//        =>for each card set the click listener to call playCard(my_index) on its hand
+//        =>for each card set the click listener to call pickRoundWinner
+//        
+//        (my_index) on its hand
 //        =>when each card is played play it in the AI as well
 //
 //
